@@ -1,3 +1,6 @@
+#ifndef POINT_H
+#define POINT_H
+
 #pragma once
 #include <string>
 #include <vector>
@@ -11,5 +14,4 @@ public:
     Point closest_point(const std::vector<Point>& points, const Point& target);
 };
 
-
-
+#endif // POINT_H
