@@ -1,93 +1,52 @@
-#include <filesystem>
-#include <fstream>
 #include <iostream>
+#include <vector>
+#include <string>
+#include "../src/include/algorithms.h"
+#include "../src/utils/point.h"
 
-#include <cxxopts.hpp>
-#include <fmt/format.h>
-#include <nlohmann/json.hpp>
-#include <spdlog/spdlog.h>
+int main() {
+    int n;
+    std::cin >> n;
 
-#include "config.hpp"
-#include "foo.h"
-
-using json = nlohmann::json;
-namespace fs = std::filesystem;
-
-int main(int argc, char **argv)
-{
-    std::cout << "JSON: " << NLOHMANN_JSON_VERSION_MAJOR << "."
-              << NLOHMANN_JSON_VERSION_MINOR << "."
-              << NLOHMANN_JSON_VERSION_PATCH << '\n';
-    std::cout << "FMT: " << FMT_VERSION << '\n';
-    std::cout << "CXXOPTS: " << CXXOPTS__VERSION_MAJOR << "."
-              << CXXOPTS__VERSION_MINOR << "." << CXXOPTS__VERSION_PATCH
-              << '\n';
-    std::cout << "SPDLOG: " << SPDLOG_VER_MAJOR << "." << SPDLOG_VER_MINOR
-              << "." << SPDLOG_VER_PATCH << '\n';
-    std::cout << "\n\nUsage Example:\n";
-
-    // Compiler Warning and clang tidy error
-    // std::int32_t i = 0;
-
-    // Adress Sanitizer should see this
-    // char x[10];
-    // x[11] = 1;
-
-    const auto welcome_message =
-        fmt::format("Welcome to {} v{}\n", project_name, project_version);
-    spdlog::info(welcome_message);
-
-    cxxopts::Options options(project_name.data(), welcome_message);
-
-    options.add_options("arguments")("h,help", "Print usage")(
-        "f,filename",
-        "File name",
-        cxxopts::value<std::string>())(
-        "v,verbose",
-        "Verbose output",
-        cxxopts::value<bool>()->default_value("false"));
-
-    auto result = options.parse(argc, argv);
-
-    if (argc == 1 || result.count("help"))
-    {
-        std::cout << options.help() << '\n';
-        return 0;
+    std::vector<std::vector<int>> kruskal_matrix(n, std::vector<int>(n));
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            std::cin >> kruskal_matrix[i][j];
+        }
     }
 
-    auto filename = std::string{};
-    auto verbose = false;
-
-    if (result.count("filename"))
-    {
-        filename = result["filename"].as<std::string>();
-    }
-    else
-    {
-        return 1;
+    std::vector<std::vector<int>> capacity_matrix(n, std::vector<int>(n));
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            std::cin >> capacity_matrix[i][j];
+        }
     }
 
-    verbose = result["verbose"].as<bool>();
-
-    if (verbose)
-    {
-        fmt::print("Opening file: {}\n", filename);
+    std::vector<Point> points;
+    std::string input;
+    for (int i = 0; i < n; ++i) {
+        std::cin >> input;
+        points.push_back(Point::parse_point(input));
     }
 
-    auto ifs = std::ifstream{filename};
+    std::cin >> input;
+    Point target = Point::parse_point(input);
 
-    if (!ifs.is_open())
-    {
-        return 1;
+    kruskal(n, kruskal_matrix);
+    traveling_salesman(n, kruskal_matrix);
+
+    int graph[100][100];
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            graph[i][j] = capacity_matrix[i][j];
+        }
     }
 
-    const auto parsed_data = json::parse(ifs);
+    int max_flow = fordFulkerson(graph, 0, n - 1, n);
+    std::cout << "3.\n" << max_flow << std::endl;
 
-    if (verbose)
-    {
-        const auto name = parsed_data["name"];
-        fmt::print("Name: {}\n", name);
-    }
+    Point closest = target.closest_point(points, target);
+    std::cout << "4.\n(" << closest.x << "," << closest.y << ")\n";
 
     return 0;
 }
