@@ -1,6 +1,3 @@
-#ifndef POINT_H
-#define POINT_H
-
 #pragma once
 #include <string>
 #include <vector>
@@ -13,5 +10,3 @@ public:
     static Point parse_point(const std::string& input);
     Point closest_point(const std::vector<Point>& points, const Point& target);
 };
-
-#endif // POINT_H
